@@ -5,7 +5,7 @@ export const tasks: Task[] = [
     id: 1,
     title: "Set up the project",
     description: "Next.js, TypeScript, and GitHub",
-    status: "done",
+    status: "todo",
     createdAt: "2026-11-01",
   },
   {
