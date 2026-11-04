@@ -1,4 +1,5 @@
 import type { Task } from "@/types/task";
+import Link from "next/link";
 
 interface TaskCardProps {
   task: Task;
@@ -15,12 +16,14 @@ export default function TaskCard({
     <li className="rounded-lg border p-4">
       <div className="flex items-center justify-between gap-3">
         <h2
-          className={`font-semibold ${
-            task.status === "done" ? "line-through opacity-60" : ""
-          }`}
-        >
-          {task.title}
-        </h2>
+  className={`font-semibold ${
+    task.status === "done" ? "line-through opacity-60" : ""
+  }`}
+>
+  <Link href={`/tasks/${task.id}`} className="hover:underline">
+    {task.title}
+  </Link>
+</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => onCycleStatus(task.id)}

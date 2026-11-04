@@ -22,3 +22,7 @@ export const tasks: Task[] = [
     createdAt: "2026-11-04",
   },
 ];
+
+export function getTaskById(id: number): Task | undefined {
+  return tasks.find((task) => task.id === id);
+}
