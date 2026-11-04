@@ -1,35 +1,5 @@
+import { prisma } from "@/lib/prisma";
 import type { Task, TaskStatus } from "@/types/task";
-
-const seed: Task[] = [
-  {
-    id: 1,
-    title: "Set up the project",
-    description: "Next.js, TypeScript, and GitHub",
-    status: "done",
-    createdAt: "2026-11-01",
-  },
-  {
-    id: 2,
-    title: "Build the task list",
-    status: "in-progress",
-    createdAt: "2026-11-04",
-  },
-  {
-    id: 3,
-    title: "Add a task form",
-    description: "Needs client-side state",
-    status: "todo",
-    createdAt: "2026-11-04",
-  },
-];
-
-// In dev mode, Next.js reloads modules often. Storing the array on
-// globalThis keeps our data alive between reloads.
-const globalForTasks = globalThis as unknown as { tasks?: Task[] };
-
-function db(): Task[] {
-  return (globalForTasks.tasks ??= [...seed]);
-}
 
 const nextStatus: Record<TaskStatus, TaskStatus> = {
   todo: "in-progress",
@@ -37,33 +7,51 @@ const nextStatus: Record<TaskStatus, TaskStatus> = {
   done: "todo",
 };
 
-export function getTasks(): Task[] {
-  return db();
+function isTaskStatus(value: string): value is TaskStatus {
+  return value === "todo" || value === "in-progress" || value === "done";
 }
 
-export function getTaskById(id: number): Task | undefined {
-  return db().find((task) => task.id === id);
-}
-
-export function createTask(title: string): Task {
-  const tasks = db();
-  const task: Task = {
-    id: Math.max(0, ...tasks.map((t) => t.id)) + 1,
-    title,
-    status: "todo",
-    createdAt: new Date().toISOString().slice(0, 10),
+// Converts a database row into our app's Task type.
+function toTask(row: {
+  id: number;
+  title: string;
+  description: string | null;
+  status: string;
+  createdAt: Date;
+}): Task {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description ?? undefined,
+    status: isTaskStatus(row.status) ? row.status : "todo",
+    createdAt: row.createdAt.toISOString().slice(0, 10),
   };
-  tasks.unshift(task);
-  return task;
 }
 
-export function cycleTaskStatus(id: number): void {
-  const task = getTaskById(id);
-  if (task) task.status = nextStatus[task.status];
+export async function getTasks(): Promise<Task[]> {
+  const rows = await prisma.task.findMany({ orderBy: { createdAt: "desc" } });
+  return rows.map(toTask);
 }
 
-export function removeTask(id: number): void {
-  const tasks = db();
-  const index = tasks.findIndex((task) => task.id === id);
-  if (index !== -1) tasks.splice(index, 1);
+export async function getTaskById(id: number): Promise<Task | undefined> {
+  const row = await prisma.task.findUnique({ where: { id } });
+  return row ? toTask(row) : undefined;
+}
+
+export async function createTask(title: string): Promise<Task> {
+  const row = await prisma.task.create({ data: { title } });
+  return toTask(row);
+}
+
+export async function cycleTaskStatus(id: number): Promise<void> {
+  const task = await getTaskById(id);
+  if (!task) return;
+  await prisma.task.update({
+    where: { id },
+    data: { status: nextStatus[task.status] },
+  });
+}
+
+export async function removeTask(id: number): Promise<void> {
+  await prisma.task.deleteMany({ where: { id } });
 }

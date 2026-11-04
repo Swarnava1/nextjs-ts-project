@@ -8,8 +8,8 @@ interface TaskPageProps {
 
 export default async function TaskPage({ params }: TaskPageProps) {
   const { id } = await params;
-  const task = getTaskById(Number(id));
-
+  const task = await getTaskById(Number(id));
+  
   if (!task) {
     notFound();
   }

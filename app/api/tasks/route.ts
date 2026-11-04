@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createTask, getTasks } from "@/data/tasks";
 
 export async function GET() {
-  return NextResponse.json(getTasks());
+  return NextResponse.json(await getTasks());
 }
 
 export async function POST(request: Request) {
@@ -17,6 +17,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
   }
 
-  const task = createTask(title.trim());
+  const task = await createTask(title.trim());
   return NextResponse.json(task, { status: 201 });
 }

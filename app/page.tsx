@@ -4,8 +4,8 @@ import TaskList from "@/components/TaskList";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const tasks = getTasks();
+export default async function Home() {
+  const tasks = await getTasks();
 
   return (
     <main className="mx-auto max-w-2xl p-8">

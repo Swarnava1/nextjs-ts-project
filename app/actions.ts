@@ -8,17 +8,17 @@ export async function addTask(formData: FormData) {
 
   if (typeof title !== "string" || !title.trim()) return;
 
-  createTask(title.trim());
+  await createTask(title.trim());
   revalidatePath("/");
 }
 
 export async function cycleStatus(id: number) {
-  cycleTaskStatus(id);
+  await cycleTaskStatus(id);
   revalidatePath("/");
   revalidatePath(`/tasks/${id}`);
 }
 
 export async function deleteTask(id: number) {
-  removeTask(id);
+  await removeTask(id);
   revalidatePath("/");
 }
