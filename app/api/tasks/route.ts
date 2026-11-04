@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
 import { createTask, getTasks } from "@/data/tasks";
+import { createTaskSchema } from "@/lib/validation";
 
 export async function GET() {
   return NextResponse.json(await getTasks());
 }
 
 export async function POST(request: Request) {
-  const body: unknown = await request.json();
-
-  const title =
-    typeof body === "object" && body !== null && "title" in body
-      ? (body as { title: unknown }).title
-      : undefined;
-
-  if (typeof title !== "string" || !title.trim()) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const task = await createTask(title.trim());
+  const parsed = createTaskSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0].message },
+      { status: 400 }
+    );
+  }
+
+  const task = await createTask(parsed.data.title);
   return NextResponse.json(task, { status: 201 });
 }

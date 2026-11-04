@@ -2,14 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { createTask, cycleTaskStatus, removeTask } from "@/data/tasks";
+import { createTaskSchema } from "@/lib/validation";
 
-export async function addTask(formData: FormData) {
-  const title = formData.get("title");
+export type AddTaskState = { error?: string };
 
-  if (typeof title !== "string" || !title.trim()) return;
+export async function addTask(
+  _prevState: AddTaskState,
+  formData: FormData
+): Promise<AddTaskState> {
+  const parsed = createTaskSchema.safeParse({ title: formData.get("title") });
 
-  await createTask(title.trim());
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  await createTask(parsed.data.title);
   revalidatePath("/");
+  return {};
 }
 
 export async function cycleStatus(id: number) {

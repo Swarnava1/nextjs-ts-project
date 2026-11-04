@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Task, TaskStatus } from "@/types/task";
+import { isTaskStatus, type Task, type TaskStatus } from "@/types/task";
 
 const nextStatus: Record<TaskStatus, TaskStatus> = {
   todo: "in-progress",
@@ -7,9 +7,9 @@ const nextStatus: Record<TaskStatus, TaskStatus> = {
   done: "todo",
 };
 
-function isTaskStatus(value: string): value is TaskStatus {
-  return value === "todo" || value === "in-progress" || value === "done";
-}
+//function isTaskStatus(value: string): value is TaskStatus {
+  //return value === "todo" || value === "in-progress" || value === "done";
+//}
 
 // Converts a database row into our app's Task type.
 function toTask(row: {
@@ -28,8 +28,11 @@ function toTask(row: {
   };
 }
 
-export async function getTasks(): Promise<Task[]> {
-  const rows = await prisma.task.findMany({ orderBy: { createdAt: "desc" } });
+export async function getTasks(status?: TaskStatus): Promise<Task[]> {
+  const rows = await prisma.task.findMany({
+    where: status ? { status } : undefined,
+    orderBy: { createdAt: "desc" },
+  });
   return rows.map(toTask);
 }
 
