@@ -3,15 +3,9 @@ import TaskCard from "./TaskCard";
 
 interface TaskListProps {
   tasks: Task[];
-  onCycleStatus: (id: number) => void;
-  onDelete: (id: number) => void;
 }
 
-export default function TaskList({
-  tasks,
-  onCycleStatus,
-  onDelete,
-}: TaskListProps) {
+export default function TaskList({ tasks }: TaskListProps) {
   if (tasks.length === 0) {
     return <p className="opacity-70">No tasks yet.</p>;
   }
@@ -19,12 +13,7 @@ export default function TaskList({
   return (
     <ul className="space-y-3">
       {tasks.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
-          onCycleStatus={onCycleStatus}
-          onDelete={onDelete}
-        />
+        <TaskCard key={task.id} task={task} />
       ))}
     </ul>
   );

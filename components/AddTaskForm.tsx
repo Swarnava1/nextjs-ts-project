@@ -1,28 +1,12 @@
-"use client";
+import { addTask } from "@/app/actions";
 
-import { useState } from "react";
-
-interface AddTaskFormProps {
-  onAdd: (title: string) => void;
-}
-
-export default function AddTaskForm({ onAdd }: AddTaskFormProps) {
-  const [title, setTitle] = useState("");
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    onAdd(trimmed);
-    setTitle("");
-  }
-
+export default function AddTaskForm() {
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form action={addTask} className="flex gap-2">
       <input
         type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        name="title"
+        required
         placeholder="What needs doing?"
         className="flex-1 rounded-lg border bg-transparent px-3 py-2"
       />

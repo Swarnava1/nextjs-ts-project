@@ -1,11 +1,11 @@
-import type { Task } from "@/types/task";
+import type { Task, TaskStatus } from "@/types/task";
 
-export const tasks: Task[] = [
+const seed: Task[] = [
   {
     id: 1,
     title: "Set up the project",
     description: "Next.js, TypeScript, and GitHub",
-    status: "todo",
+    status: "done",
     createdAt: "2026-11-01",
   },
   {
@@ -23,6 +23,47 @@ export const tasks: Task[] = [
   },
 ];
 
+// In dev mode, Next.js reloads modules often. Storing the array on
+// globalThis keeps our data alive between reloads.
+const globalForTasks = globalThis as unknown as { tasks?: Task[] };
+
+function db(): Task[] {
+  return (globalForTasks.tasks ??= [...seed]);
+}
+
+const nextStatus: Record<TaskStatus, TaskStatus> = {
+  todo: "in-progress",
+  "in-progress": "done",
+  done: "todo",
+};
+
+export function getTasks(): Task[] {
+  return db();
+}
+
 export function getTaskById(id: number): Task | undefined {
-  return tasks.find((task) => task.id === id);
+  return db().find((task) => task.id === id);
+}
+
+export function createTask(title: string): Task {
+  const tasks = db();
+  const task: Task = {
+    id: Math.max(0, ...tasks.map((t) => t.id)) + 1,
+    title,
+    status: "todo",
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+  tasks.unshift(task);
+  return task;
+}
+
+export function cycleTaskStatus(id: number): void {
+  const task = getTaskById(id);
+  if (task) task.status = nextStatus[task.status];
+}
+
+export function removeTask(id: number): void {
+  const tasks = db();
+  const index = tasks.findIndex((task) => task.id === id);
+  if (index !== -1) tasks.splice(index, 1);
 }
